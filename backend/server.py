@@ -342,7 +342,9 @@ async def dashboard_customer(
     leads = [LeadPublic(**doc) for doc in docs]
 
     total_leads = len(leads)
-    completed_bookings = len([l for l in leads if l.type == "booking" and l.status == "completed"])
+    completed_bookings = len([
+        lead for lead in leads if lead.type == "booking" and lead.status == "completed"
+    ])
 
     return DashboardCustomer(total_leads=total_leads, completed_bookings=completed_bookings, leads=leads)
 
