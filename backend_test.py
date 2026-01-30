@@ -99,9 +99,12 @@ class GolascoAPITester:
         if not self.user_data:
             return False
             
+        # Backend incorrectly uses UserCreate model for login, so we need to send all fields
         login_data = {
             "email": self.user_data['email'],
-            "password": "testpass123"
+            "password": "testpass123",
+            "full_name": self.user_data['full_name'],  # Required due to backend bug
+            "role": self.user_data['role']  # Required due to backend bug
         }
         
         success, response = self.run_test("Login", "POST", "auth/login", 200, login_data)
