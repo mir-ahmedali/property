@@ -401,7 +401,11 @@ async def dashboard_franchise(
     leads = [LeadPublic(**doc) for doc in leads_docs]
 
     total_booking_amount = float(
-        sum(l.amount or 0 for l in leads_docs if l.get("type") == "booking" and l.get("status") == "completed")
+        sum(
+            (lead_doc.get("amount") or 0)
+            for lead_doc in leads_docs
+            if lead_doc.get("type") == "booking" and lead_doc.get("status") == "completed"
+        )
     )
 
     recent_leads = leads[:10]
