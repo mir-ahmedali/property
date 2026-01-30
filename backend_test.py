@@ -130,15 +130,15 @@ class GolascoAPITester:
         """Test creating a site visit lead"""
         # First get a property to create lead for
         success, props_response = self.run_test("Get Properties for Lead", "GET", "properties", 200)
-        if not success or not props_response:
+        if not success:
             return False
             
-        # If no properties exist, we can't test lead creation
+        # If no properties exist, create a lead with a dummy property ID to test the endpoint
         if not props_response:
-            self.log_test("Create Site Visit Lead", False, "No properties available to create lead")
+            self.log_test("Create Site Visit Lead", False, "No properties available - need sample data")
             return False
             
-        property_id = props_response[0]['id'] if props_response else "test-property-id"
+        property_id = props_response[0]['id']
         
         lead_data = {
             "property_id": property_id,
