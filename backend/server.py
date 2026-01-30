@@ -363,7 +363,9 @@ async def dashboard_agent(
 
     props_count = await database.properties.count_documents({"assigned_agent_id": current_user.id})
     total_leads = len(leads)
-    completed_bookings = len([l for l in leads if l.type == "booking" and l.status == "completed"])
+    completed_bookings = len([
+        lead for lead in leads if lead.type == "booking" and lead.status == "completed"
+    ])
 
     return DashboardAgent(
         total_leads=total_leads,
