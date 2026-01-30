@@ -1,13 +1,14 @@
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from motor.motor_asyncio import AsyncIOMotorDatabase
 import os
 import logging
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime, timezone
 
+from .db import db, get_db, close_db_client
 from .models import (
     UserCreate,
     UserInDB,
@@ -36,8 +37,6 @@ from .auth import (
     create_access_token,
     get_current_active_user,
     user_to_public,
-    ACCESS_TOKEN_EXPIRE_MINUTES,
-    SECRET_KEY as AUTH_SECRET_KEY,
 )
 from .razorpay_service import get_razorpay_service
 
@@ -45,23 +44,7 @@ from .razorpay_service import get_razorpay_service
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Configure auth secret from env if available
-secret_from_env = os.environ.get("JWT_SECRET_KEY")
-if secret_from_env:
-    # mutate imported constant
-    from . import auth as auth_module
-
-    auth_module.SECRET_KEY = secret_from_env
-
-
-# Dependency to access DB in routes
-async def get_db() -> AsyncIOMotorDatabase:
-    return db
+# MongoDB connection handled in db.py
 
 
 # Create the main app without a prefix

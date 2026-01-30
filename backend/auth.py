@@ -8,10 +8,11 @@ from passlib.context import CryptContext
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from .models import UserInDB, UserPublic
-from .server import get_db
+from .db import get_db
+import os
 
 
-SECRET_KEY = "CHANGE_ME_IN_ENV"  # Will be overridden from env via server
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "CHANGE_ME_IN_ENV")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
