@@ -227,7 +227,9 @@ def main():
     tests = [
         ("Root API", tester.test_root_endpoint),
         ("Customer Registration", tester.test_register_customer),
-        ("Login", tester.test_login),
+        ("Login (UserLogin Model)", tester.test_login),
+        ("Login Wrong Password", tester.test_login_with_wrong_credentials),
+        ("Login Non-existent Email", tester.test_login_with_nonexistent_email),
         ("Get Current User", tester.test_get_me),
         ("Get Properties", tester.test_get_properties),
         ("Get Properties with Filters", tester.test_get_properties_with_filters),
