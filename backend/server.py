@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from db import db, get_db, close_db_client
 from models import (
     UserCreate,
+    UserLogin,
     UserInDB,
     UserPublic,
     Token,
@@ -76,8 +77,7 @@ async def register_user(payload: UserCreate, database: AsyncIOMotorDatabase = De
 
 
 @api_router.post("/auth/login", response_model=Token)
-async def login_user(payload: UserCreate, database: AsyncIOMotorDatabase = Depends(get_db)):
-    # Using UserCreate here for simplicity (email + password), other fields will be ignored
+async def login_user(payload: UserLogin, database: AsyncIOMotorDatabase = Depends(get_db)):
     doc = await database.users.find_one({"email": payload.email})
     if not doc:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")

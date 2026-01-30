@@ -29,9 +29,15 @@ export function LoginPage() {
       else if (user.role === "franchise_owner") navigate("/dashboard/franchise");
       else navigate("/");
     } catch (error) {
+      let description = "Invalid credentials";
+      if (error.response?.data?.detail) {
+        description = typeof error.response.data.detail === "string"
+          ? error.response.data.detail
+          : JSON.stringify(error.response.data.detail);
+      }
       toast({
         title: "Login failed",
-        description: error.response?.data?.detail || "Invalid credentials",
+        description,
         variant: "destructive",
       });
     } finally {
