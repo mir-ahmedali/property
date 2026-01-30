@@ -99,19 +99,41 @@ class GolascoAPITester:
         if not self.user_data:
             return False
             
-        # Backend incorrectly uses UserCreate model for login, so we need to send all fields
+        # Test new UserLogin model - only email and password required
         login_data = {
             "email": self.user_data['email'],
-            "password": "testpass123",
-            "full_name": self.user_data['full_name'],  # Required due to backend bug
-            "role": self.user_data['role']  # Required due to backend bug
+            "password": "testpass123"
         }
         
-        success, response = self.run_test("Login", "POST", "auth/login", 200, login_data)
+        success, response = self.run_test("Login (UserLogin Model)", "POST", "auth/login", 200, login_data)
         if success and 'access_token' in response:
             self.token = response['access_token']
             return True
         return False
+
+    def test_login_with_wrong_credentials(self):
+        """Test login with wrong credentials"""
+        if not self.user_data:
+            return False
+            
+        # Test with wrong password
+        login_data = {
+            "email": self.user_data['email'],
+            "password": "wrongpassword"
+        }
+        
+        success, response = self.run_test("Login Wrong Password", "POST", "auth/login", 401, login_data)
+        return success
+
+    def test_login_with_nonexistent_email(self):
+        """Test login with non-existent email"""
+        login_data = {
+            "email": "nonexistent@test.com",
+            "password": "testpass123"
+        }
+        
+        success, response = self.run_test("Login Non-existent Email", "POST", "auth/login", 401, login_data)
+        return success
 
     def test_get_me(self):
         """Test get current user"""
