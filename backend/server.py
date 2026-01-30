@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime, timezone
 
-from .db import db, get_db, close_db_client
-from .models import (
+from db import db, get_db, close_db_client
+from models import (
     UserCreate,
     UserInDB,
     UserPublic,
@@ -31,14 +31,14 @@ from .models import (
     RazorpayOrderResponse,
     RazorpayVerifyRequest,
 )
-from .auth import (
+from auth import (
     get_password_hash,
     verify_password,
     create_access_token,
     get_current_active_user,
     user_to_public,
 )
-from .razorpay_service import get_razorpay_service
+from razorpay_service import get_razorpay_service
 
 
 ROOT_DIR = Path(__file__).parent
