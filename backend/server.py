@@ -1,14 +1,45 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
+from typing import List, Optional
 from datetime import datetime, timezone
+
+from .models import (
+    UserCreate,
+    UserInDB,
+    UserPublic,
+    Token,
+    FranchiseCreate,
+    FranchiseInDB,
+    FranchisePublic,
+    PropertyCreate,
+    PropertyUpdate,
+    PropertyInDB,
+    PropertyPublic,
+    LeadCreate,
+    LeadInDB,
+    LeadPublic,
+    DashboardCustomer,
+    DashboardAgent,
+    DashboardFranchise,
+    RazorpayOrderRequest,
+    RazorpayOrderResponse,
+    RazorpayVerifyRequest,
+)
+from .auth import (
+    get_password_hash,
+    verify_password,
+    create_access_token,
+    get_current_active_user,
+    user_to_public,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    SECRET_KEY as AUTH_SECRET_KEY,
+)
+from .razorpay_service import get_razorpay_service
 
 
 ROOT_DIR = Path(__file__).parent
@@ -19,6 +50,20 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Configure auth secret from env if available
+secret_from_env = os.environ.get("JWT_SECRET_KEY")
+if secret_from_env:
+    # mutate imported constant
+    from . import auth as auth_module
+
+    auth_module.SECRET_KEY = secret_from_env
+
+
+# Dependency to access DB in routes
+async def get_db() -> AsyncIOMotorDatabase:
+    return db
+
+
 # Create the main app without a prefix
 app = FastAPI()
 
@@ -26,45 +71,346 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Golasco Property API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+# ---------- Auth Routes ----------
+
+@api_router.post("/auth/register", response_model=Token)
+async def register_user(payload: UserCreate, database: AsyncIOMotorDatabase = Depends(get_db)):
+    existing = await database.users.find_one({"email": payload.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    password_hash = get_password_hash(payload.password)
+    user_in_db = UserInDB(**payload.model_dump(exclude={"password"}), password_hash=password_hash)
+    await database.users.insert_one(user_in_db.model_dump())
+
+    access_token = create_access_token({"sub": user_in_db.id, "role": user_in_db.role})
+    return Token(access_token=access_token, user=user_to_public(user_in_db))
+
+
+@api_router.post("/auth/login", response_model=Token)
+async def login_user(payload: UserCreate, database: AsyncIOMotorDatabase = Depends(get_db)):
+    # Using UserCreate here for simplicity (email + password), other fields will be ignored
+    doc = await database.users.find_one({"email": payload.email})
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+
+    user = UserInDB(**doc)
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+
+    access_token = create_access_token({"sub": user.id, "role": user.role})
+    return Token(access_token=access_token, user=user_to_public(user))
+
+
+@api_router.get("/auth/me", response_model=UserPublic)
+async def get_me(current_user: UserInDB = Depends(get_current_active_user)):
+    return user_to_public(current_user)
+
+
+# ---------- Franchise & Agent Management (simplified) ----------
+
+@api_router.post("/franchises", response_model=FranchisePublic)
+async def create_franchise(
+    payload: FranchiseCreate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Only super admin can create franchises")
+
+    franchise = FranchiseInDB(**payload.model_dump())
+    await database.franchises.insert_one(franchise.model_dump())
+    return FranchisePublic(**franchise.model_dump())
+
+
+# ---------- Property Management ----------
+
+@api_router.post("/properties", response_model=PropertyPublic)
+async def create_property(
+    payload: PropertyCreate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role not in {"agent", "franchise_owner"}:
+        raise HTTPException(status_code=403, detail="Not allowed to create properties")
+
+    franchise_id = current_user.franchise_id
+    if not franchise_id:
+        raise HTTPException(status_code=400, detail="User is not linked to a franchise")
+
+    prop = PropertyInDB(**payload.model_dump(), franchise_id=franchise_id)
+    await database.properties.insert_one(prop.model_dump())
+    return PropertyPublic(**prop.model_dump())
+
+
+@api_router.get("/properties", response_model=List[PropertyPublic])
+async def list_properties(
+    city: Optional[str] = None,
+    type: Optional[str] = None,
+    max_price: Optional[float] = None,
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    query: dict = {}
+    if city:
+        query["city"] = {"$regex": city, "$options": "i"}
+    if type:
+        query["property_type"] = type
+    if max_price is not None:
+        query["price"] = {"$lte": max_price}
+
+    docs = await database.properties.find(query, {"_id": 0}).to_list(200)
+    return [PropertyPublic(**doc) for doc in docs]
+
+
+@api_router.get("/properties/{property_id}", response_model=PropertyPublic)
+async def get_property(property_id: str, database: AsyncIOMotorDatabase = Depends(get_db)):
+    doc = await database.properties.find_one({"id": property_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    return PropertyPublic(**doc)
+
+
+@api_router.put("/properties/{property_id}", response_model=PropertyPublic)
+async def update_property(
+    property_id: str,
+    payload: PropertyUpdate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    doc = await database.properties.find_one({"id": property_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    prop = PropertyInDB(**doc)
+    if current_user.role == "agent" and prop.assigned_agent_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to edit this property")
+    if current_user.role == "franchise_owner" and prop.franchise_id != (current_user.franchise_id or ""):
+        raise HTTPException(status_code=403, detail="Not allowed to edit this property")
+
+    update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    await database.properties.update_one({"id": property_id}, {"$set": update_data})
+
+    updated = await database.properties.find_one({"id": property_id}, {"_id": 0})
+    return PropertyPublic(**updated)
+
+
+@api_router.delete("/properties/{property_id}")
+async def delete_property(
+    property_id: str,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    doc = await database.properties.find_one({"id": property_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    prop = PropertyInDB(**doc)
+    if current_user.role != "franchise_owner" or prop.franchise_id != (current_user.franchise_id or ""):
+        raise HTTPException(status_code=403, detail="Not allowed to delete this property")
+
+    await database.properties.delete_one({"id": property_id})
+    return {"success": True}
+
+
+# ---------- Leads & Booking ----------
+
+@api_router.post("/leads", response_model=LeadPublic)
+async def create_lead(
+    payload: LeadCreate,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "customer":
+        raise HTTPException(status_code=403, detail="Only customers can create leads")
+
+    prop_doc = await database.properties.find_one({"id": payload.property_id})
+    if not prop_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    prop = PropertyInDB(**prop_doc)
+    lead = LeadInDB(
+        **payload.model_dump(),
+        customer_id=current_user.id,
+        assigned_agent_id=prop.assigned_agent_id,
+        franchise_id=prop.franchise_id,
+    )
+    await database.leads.insert_one(lead.model_dump())
+    return LeadPublic(**lead.model_dump())
+
+
+@api_router.post("/leads/booking/create-order", response_model=RazorpayOrderResponse)
+async def create_booking_order(
+    payload: RazorpayOrderRequest,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "customer":
+        raise HTTPException(status_code=403, detail="Only customers can create bookings")
+
+    prop_doc = await database.properties.find_one({"id": payload.property_id})
+    if not prop_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+
+    prop = PropertyInDB(**prop_doc)
+
+    razorpay_service = get_razorpay_service()
+    receipt_id = f"lead-booking-{current_user.id}-{int(datetime.now(timezone.utc).timestamp())}"
+    order = razorpay_service.create_order(
+        amount=payload.amount,
+        receipt=receipt_id,
+        notes={"property_id": prop.id, "customer_id": current_user.id},
+    )
+
+    lead = LeadInDB(
+        property_id=prop.id,
+        type="booking",
+        message=None,
+        amount=payload.amount,
+        customer_id=current_user.id,
+        assigned_agent_id=prop.assigned_agent_id,
+        franchise_id=prop.franchise_id,
+        razorpay_order_id=order["id"],
+    )
+    await database.leads.insert_one(lead.model_dump())
+
+    razorpay_key_public = os.environ.get("RAZORPAY_KEY_ID", "")
+
+    return RazorpayOrderResponse(
+        order_id=order["id"],
+        amount=payload.amount,
+        currency=order["currency"],
+        razorpay_key=razorpay_key_public,
+        lead_id=lead.id,
+    )
+
+
+@api_router.post("/leads/booking/verify")
+async def verify_booking_payment(
+    payload: RazorpayVerifyRequest,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "customer":
+        raise HTTPException(status_code=403, detail="Only customers can verify bookings")
+
+    lead_doc = await database.leads.find_one({"id": payload.lead_id})
+    if not lead_doc:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    lead = LeadInDB(**lead_doc)
+    if lead.customer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to verify this lead")
+
+    razorpay_service = get_razorpay_service()
+    razorpay_service.verify_signature(
+        payload.razorpay_order_id, payload.razorpay_payment_id, payload.razorpay_signature
+    )
+
+    await database.leads.update_one(
+        {"id": lead.id},
+        {
+            "$set": {
+                "status": "completed",
+                "razorpay_payment_id": payload.razorpay_payment_id,
+                "razorpay_order_id": payload.razorpay_order_id,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+
+    return {"success": True}
+
+
+# ---------- Dashboards ----------
+
+@api_router.get("/dashboard/customer", response_model=DashboardCustomer)
+async def dashboard_customer(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "customer":
+        raise HTTPException(status_code=403, detail="Only customers can access this dashboard")
+
+    cursor = database.leads.find({"customer_id": current_user.id}, {"_id": 0})
+    docs = await cursor.to_list(200)
+    leads = [LeadPublic(**doc) for doc in docs]
+
+    total_leads = len(leads)
+    completed_bookings = len([l for l in leads if l.type == "booking" and l.status == "completed"])
+
+    return DashboardCustomer(total_leads=total_leads, completed_bookings=completed_bookings, leads=leads)
+
+
+@api_router.get("/dashboard/agent", response_model=DashboardAgent)
+async def dashboard_agent(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "agent":
+        raise HTTPException(status_code=403, detail="Only agents can access this dashboard")
+
+    leads_cursor = database.leads.find({"assigned_agent_id": current_user.id}, {"_id": 0})
+    leads_docs = await leads_cursor.to_list(200)
+    leads = [LeadPublic(**doc) for doc in leads_docs]
+
+    props_count = await database.properties.count_documents({"assigned_agent_id": current_user.id})
+    total_leads = len(leads)
+    completed_bookings = len([l for l in leads if l.type == "booking" and l.status == "completed"])
+
+    return DashboardAgent(
+        total_leads=total_leads,
+        completed_bookings=completed_bookings,
+        properties_count=props_count,
+        leads=leads,
+    )
+
+
+@api_router.get("/dashboard/franchise", response_model=DashboardFranchise)
+async def dashboard_franchise(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "franchise_owner":
+        raise HTTPException(status_code=403, detail="Only franchise owners can access this dashboard")
+
+    if not current_user.franchise_id:
+        raise HTTPException(status_code=400, detail="User not linked to a franchise")
+
+    fid = current_user.franchise_id
+
+    props_cursor = database.properties.find({"franchise_id": fid}, {"_id": 0})
+    props_docs = await props_cursor.to_list(500)
+
+    total_properties = len(props_docs)
+    available_properties = len([p for p in props_docs if p.get("status") == "available"])
+    booked_properties = len([p for p in props_docs if p.get("status") == "booked"])
+    sold_properties = len([p for p in props_docs if p.get("status") == "sold"])
+
+    leads_cursor = database.leads.find({"franchise_id": fid}, {"_id": 0}).sort("created_at", -1)
+    leads_docs = await leads_cursor.to_list(200)
+    leads = [LeadPublic(**doc) for doc in leads_docs]
+
+    total_booking_amount = float(
+        sum(l.amount or 0 for l in leads_docs if l.get("type") == "booking" and l.get("status") == "completed")
+    )
+
+    recent_leads = leads[:10]
+
+    return DashboardFranchise(
+        total_properties=total_properties,
+        available_properties=available_properties,
+        booked_properties=booked_properties,
+        sold_properties=sold_properties,
+        total_booking_amount=total_booking_amount,
+        recent_leads=recent_leads,
+    )
+
 
 # Include the router in the main app
 app.include_router(api_router)
