@@ -7,8 +7,8 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from .models import UserInDB, UserPublic
-from .db import get_db
+from models import UserInDB, UserPublic
+from db import get_db
 import os
 
 
