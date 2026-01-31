@@ -103,59 +103,6 @@ export function LandingPage() {
       </main>
 
       {/* Legacy property sections removed for this simplified login-focused home */}
-          <div
-            className="grid gap-4 md:grid-cols-3"
-            data-testid="properties-list"
-          >
-            {properties.map((p) => (
-              <Card
-                key={p.id}
-                className="group flex cursor-pointer flex-col border-slate-800 bg-slate-900/70 hover:border-emerald-500/60"
-                data-testid="property-card"
-                onClick={() => navigate(`/properties/${p.id}`)}
-              >
-                <CardContent className="flex flex-1 flex-col p-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <div className="text-xs font-medium uppercase tracking-wide text-emerald-400">{p.city}</div>
-                    <span
-                      data-testid="property-status-badge"
-                      className="rounded-full bg-slate-800 px-2 py-0.5 text-xs capitalize text-slate-200"
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                  <div className="mb-1 text-sm font-semibold text-white" data-testid="property-title">
-                    {p.title}
-                  </div>
-                  <div className="mb-2 text-xs text-slate-400" data-testid="property-type">
-                    {p.property_type}
-                  </div>
-                  <div className="mt-auto flex items-center justify-between pt-2">
-                    <div className="text-sm font-semibold text-emerald-400" data-testid="property-price">
-                      ₹ {p.price?.toLocaleString?.("en-IN") ?? p.price}
-                    </div>
-                    <button
-                      type="button"
-                      data-testid="property-view-button"
-                      className="text-xs font-medium text-emerald-300 underline-offset-2 hover:text-emerald-200 hover:underline"
-                    >
-                      View details
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {properties.length === 0 && (
-              <div
-                className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-sm text-slate-400"
-                data-testid="no-properties-message"
-              >
-                No properties found yet. Franchise owners can add properties from their dashboard.
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
     </div>
   );
 }
