@@ -4,9 +4,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
-import { CustomerDashboard } from "@/pages/dashboards/CustomerDashboard";
-import { AgentDashboard } from "@/pages/dashboards/AgentDashboard";
-import { FranchiseDashboard } from "@/pages/dashboards/FranchiseDashboard";
+import { SuperAdminDashboard } from "@/pages/dashboards/SuperAdminDashboard";
+import { AdminDashboard } from "@/pages/dashboards/AdminDashboard";
+import { UserDashboard } from "@/pages/dashboards/UserDashboard";
 import { PropertyDetailPage } from "@/pages/PropertyDetailPage";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 
