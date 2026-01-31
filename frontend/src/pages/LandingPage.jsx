@@ -149,7 +149,7 @@ export function LandingPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4" data-testid="home-login-form">
                 <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400" htmlFor="home-email">
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="home-email">
                     Email
                   </label>
                   <Input
@@ -158,12 +158,12 @@ export function LandingPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-10 border-slate-700 bg-slate-950/60 text-sm text-slate-50 focus-visible:ring-emerald-500"
+                    className="h-10 border-yellow-500/40 bg-white text-sm text-slate-900 focus-visible:ring-yellow-500"
                     data-testid="home-login-email-input"
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400" htmlFor="home-password">
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500" htmlFor="home-password">
                     Password
                   </label>
                   <Input
@@ -172,7 +172,7 @@ export function LandingPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-10 border-slate-700 bg-slate-950/60 text-sm text-slate-50 focus-visible:ring-emerald-500"
+                    className="h-10 border-yellow-500/40 bg-white text-sm text-slate-900 focus-visible:ring-yellow-500"
                     data-testid="home-login-password-input"
                   />
                 </div>
@@ -180,7 +180,7 @@ export function LandingPage() {
                   type="submit"
                   disabled={loading}
                   data-testid="home-login-submit-button"
-                  className="mt-2 w-full rounded-full bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700"
+                  className="mt-2 w-full rounded-full bg-black text-sm font-medium text-yellow-400 hover:bg-slate-900"
                 >
                   {loading ? "Logging in..." : "Login"}
                 </Button>
