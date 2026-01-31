@@ -197,8 +197,6 @@ async def dashboard_super_admin(
     total_users = await database.users.count_documents({})
     return SuperAdminDashboard(total_users=total_users, pending_users=pending_users)
 
-        await database.users.insert_one(admin_user.model_dump())
-
 
 @app.on_event("startup")
 async def on_startup() -> None:
