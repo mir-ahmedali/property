@@ -14,6 +14,7 @@ export function LandingPage() {
   const [city, setCity] = useState("");
   const [type, setType] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+  const [selectedRole, setSelectedRole] = useState("user");
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -42,7 +43,7 @@ export function LandingPage() {
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <header className="border-b border-slate-800 bg-slate-950/60 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2">
+          <Link to="/" data-testid="home-logo-link" className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-lg bg-emerald-600" />
             <div>
               <div className="text-lg font-semibold tracking-tight" data-testid="brand-name">
@@ -50,7 +51,7 @@ export function LandingPage() {
               </div>
               <p className="text-xs text-slate-400">Secure access for Super Admin, Admin & User</p>
             </div>
-          </div>
+          </Link>
         </div>
       </header>
 
@@ -70,19 +71,30 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="space-y-4" data-testid="home-role-hints">
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Super Admin</span>
-                  <span className="text-xs text-slate-300">Full system control</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Admin</span>
-                  <span className="text-xs text-slate-300">Own company / branch</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
-                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">User</span>
-                  <span className="text-xs text-slate-300">Personal dashboard only</span>
-                </div>
+              <div className="space-y-2" data-testid="home-role-hints">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Select access type</p>
+                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                  <SelectTrigger
+                    data-testid="home-role-select"
+                    className="h-10 border-slate-800 bg-slate-950/80 text-sm focus-visible:ring-emerald-500"
+                  >
+                    <SelectValue
+                      placeholder="Choose role"
+                      data-testid="home-role-select-value"
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="super_admin" data-testid="home-role-option-super-admin">
+                      Super Admin – Full system control
+                    </SelectItem>
+                    <SelectItem value="admin" data-testid="home-role-option-admin">
+                      Admin – Own company / branch
+                    </SelectItem>
+                    <SelectItem value="user" data-testid="home-role-option-user">
+                      User – Personal dashboard only
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="pt-2 text-center text-xs text-slate-500" data-testid="home-login-info">
