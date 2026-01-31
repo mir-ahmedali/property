@@ -24,10 +24,9 @@ export function LoginPage() {
         title: "Welcome back",
         description: `Logged in as ${user.full_name}`,
       });
-      if (user.role === "customer") navigate("/dashboard/customer");
-      else if (user.role === "agent") navigate("/dashboard/agent");
-      else if (user.role === "franchise_owner") navigate("/dashboard/franchise");
-      else navigate("/");
+      if (user.role === "super_admin") navigate("/dashboard/super-admin");
+      else if (user.role === "admin") navigate("/dashboard/admin");
+      else navigate("/dashboard/user");
     } catch (error) {
       let description = "Invalid credentials";
       if (error.response?.data?.detail) {
