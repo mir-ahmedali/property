@@ -121,9 +121,7 @@ async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
         await database.users.insert_one(admin_user.model_dump())
 
 
-@app.on_event("startup")
-async def on_startup() -> None:
-    await seed_default_users(db)
+# Startup event removed
 
 
 # ---------- Super Admin User Management ----------
@@ -203,9 +201,7 @@ async def dashboard_super_admin(
     return SuperAdminDashboard(total_users=total_users, pending_users=pending_users)
 
 
-@app.on_event("startup")
-async def on_startup() -> None:
-    await seed_default_users(db)
+# Startup event removed
 
 
 @api_router.post("/auth/login", response_model=Token)
