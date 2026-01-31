@@ -41,112 +41,68 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <header className="border-b border-slate-800 bg-slate-950/60 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-lg bg-emerald-600" />
             <div>
               <div className="text-lg font-semibold tracking-tight" data-testid="brand-name">
                 Golasco Property
               </div>
-              <p className="text-xs text-slate-400">Urban real estate network</p>
+              <p className="text-xs text-slate-400">Secure access for Super Admin, Admin & User</p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {user && (
-              <Button
-                data-testid="header-dashboard-button"
-                variant="outline"
-                className="border-emerald-500/40 bg-slate-900/60 text-sm hover:bg-slate-900"
-                onClick={goToDashboard}
-              >
-                Go to Dashboard
-              </Button>
-            )}
-            <Link to="/login" data-testid="header-login-link">
-              <Button className="rounded-full bg-emerald-600 px-5 text-sm font-medium text-white hover:bg-emerald-700">
-                Login
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-10">
-        <section className="grid gap-10 md:grid-cols-[1.4fr_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl" data-testid="hero-heading">
-              Find your next home with <span className="text-emerald-400">Golasco</span>.
-            </h1>
-            <p className="max-w-xl text-base text-slate-300 md:text-lg" data-testid="hero-subtitle">
-              A modern network for customers, agents, and franchise owners to manage urban real estate in one fast, 
-              PWA-ready dashboard.
-            </p>
-
-            <div
-              className="grid gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 shadow-sm md:grid-cols-4"
-              data-testid="property-filters"
-            >
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">City</label>
-                <Input
-                  data-testid="filter-city-input"
-                  placeholder="e.g. Mumbai, Pune"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="h-10 border-slate-700 bg-slate-950/60 text-sm focus-visible:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">Type</label>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger
-                    data-testid="filter-type-select"
-                    className="h-10 border-slate-700 bg-slate-950/60 text-sm focus:ring-emerald-500 focus-visible:ring-emerald-500"
-                  >
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1BHK">1BHK</SelectItem>
-                    <SelectItem value="2BHK">2BHK</SelectItem>
-                    <SelectItem value="3BHK">3BHK</SelectItem>
-                    <SelectItem value="Plot">Plot</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">Max Price (₹)</label>
-                <Input
-                  data-testid="filter-max-price-input"
-                  type="number"
-                  placeholder="50,00,000"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  className="h-10 border-slate-700 bg-slate-950/60 text-sm focus-visible:ring-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <Card className="border-slate-800 bg-slate-900/70" data-testid="role-highlight-card">
-              <CardContent className="space-y-3 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400">Built for scale</p>
-                <h2 className="text-base font-semibold text-white md:text-lg">Customers, Agents & Franchise Owners</h2>
-                <p className="text-sm text-slate-300">
-                  Login as a customer to book site visits and pay booking amounts online. Agents and franchise owners
-                  manage properties, leads, and revenue in real time.
+      <main className="flex min-h-[calc(100vh-57px)] items-center justify-center px-4 py-10">
+        <section className="w-full max-w-md">
+          <Card className="border-slate-800 bg-slate-900/80" data-testid="home-login-card">
+            <CardContent className="space-y-6 p-6">
+              <div className="space-y-2 text-center">
+                <h1
+                  className="text-4xl font-semibold tracking-tight text-white sm:text-5xl"
+                  data-testid="hero-heading"
+                >
+                  Login to Golasco
+                </h1>
+                <p className="text-sm text-slate-300" data-testid="hero-subtitle">
+                  Single login for Super Admin, Admin, and User. Access changes automatically based on your role.
                 </p>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+              </div>
 
-        <section className="mt-10 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white" data-testid="properties-heading">
-              Featured properties
-            </h2>
-          </div>
+              <div className="space-y-4" data-testid="home-role-hints">
+                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Super Admin</span>
+                  <span className="text-xs text-slate-300">Full system control</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Admin</span>
+                  <span className="text-xs text-slate-300">Own company / branch</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-slate-400">User</span>
+                  <span className="text-xs text-slate-300">Personal dashboard only</span>
+                </div>
+              </div>
+
+              <div className="pt-2 text-center text-xs text-slate-500" data-testid="home-login-info">
+                Use your email & password to login. New users can register from the link below; Super Admin will approve
+                their access.
+              </div>
+
+              <div className="flex justify-center">
+                <Link to="/login" data-testid="home-login-link">
+                  <Button className="rounded-full bg-emerald-600 px-6 text-sm font-medium text-white hover:bg-emerald-700">
+                    Go to login
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      </main>
+
+      {/* Legacy property sections removed for this simplified login-focused home */}
           <div
             className="grid gap-4 md:grid-cols-3"
             data-testid="properties-list"
