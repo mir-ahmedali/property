@@ -108,6 +108,12 @@ async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
         )
         await database.users.insert_one(super_user.model_dump())
 
+
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    await seed_default_users(db)
+
     existing_admin = await database.users.find_one({"role": "admin"})
     if not existing_admin:
         admin_user = UserInDB(
