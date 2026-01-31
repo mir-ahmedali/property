@@ -186,11 +186,11 @@ export function LandingPage() {
                 </Button>
               </form>
 
-              <p className="pt-1 text-center text-xs text-slate-400" data-testid="home-register-text">
+              <p className="pt-1 text-center text-xs text-slate-500" data-testid="home-register-text">
                 New user?{" "}
                 <Link
                   to="/register"
-                  className="font-medium text-emerald-300 hover:text-emerald-200"
+                  className="font-medium text-yellow-600 hover:text-yellow-500"
                   data-testid="home-go-register-link"
                 >
                   Create an account
