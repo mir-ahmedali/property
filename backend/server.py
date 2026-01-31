@@ -29,6 +29,9 @@ from models import (
     DashboardCustomer,
     DashboardAgent,
     DashboardFranchise,
+    SuperAdminDashboard,
+    AdminDashboardModel,
+    UserDashboardModel,
     RazorpayOrderRequest,
     RazorpayOrderResponse,
     RazorpayVerifyRequest,
@@ -75,6 +78,122 @@ async def register_user(payload: UserRegister, database: AsyncIOMotorDatabase = 
         email=payload.email,
         full_name=payload.full_name,
         role="user",
+
+
+async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
+    """Seed one Super Admin and one Admin if they do not exist."""
+    from auth import get_password_hash as _hash  # avoid circular import at module import time
+
+    super_admin_email = "super@golasco.com"
+    admin_email = "admin@golasco.com"
+
+    existing_super = await database.users.find_one({"role": "super_admin"})
+    if not existing_super:
+        super_user = UserInDB(
+            email=super_admin_email,
+            full_name="Default Super Admin",
+            role="super_admin",
+            franchise_id=None,
+            password_hash=_hash("Super@123"),
+            is_verified=True,
+        )
+        await database.users.insert_one(super_user.model_dump())
+
+    existing_admin = await database.users.find_one({"role": "admin"})
+    if not existing_admin:
+        admin_user = UserInDB(
+            email=admin_email,
+            full_name="Default Admin",
+            role="admin",
+            franchise_id="default-company",
+            password_hash=_hash("Admin@123"),
+            is_verified=True,
+        )
+
+
+# ---------- Super Admin User Management ----------
+
+@api_router.get("/super-admin/users/pending", response_model=SuperAdminDashboard)
+async def list_pending_users(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Only Super Admin can view pending users")
+
+    pending_cursor = database.users.find({"is_verified": False}, {"_id": 0})
+    pending_docs = await pending_cursor.to_list(200)
+    pending_users = [UserPublic(**doc) for doc in pending_docs]
+
+    total_users = await database.users.count_documents({})
+    return SuperAdminDashboard(total_users=total_users, pending_users=pending_users)
+
+
+@api_router.post("/super-admin/users/{user_id}/verify", response_model=UserPublic)
+async def verify_user_request(
+    user_id: str,
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Only Super Admin can verify users")
+
+    doc = await database.users.find_one({"id": user_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await database.users.update_one({"id": user_id}, {"$set": {"is_verified": True}})
+    updated = await database.users.find_one({"id": user_id}, {"_id": 0})
+    return UserPublic(**updated)
+
+
+# ---------- Simple Dashboards for new roles ----------
+
+@api_router.get("/dashboard/user", response_model=UserDashboardModel)
+async def dashboard_user(current_user: UserInDB = Depends(get_current_active_user)):
+    if current_user.role != "user":
+        raise HTTPException(status_code=403, detail="Only normal users can access this dashboard")
+    return UserDashboardModel(user=user_to_public(current_user))
+
+
+@api_router.get("/dashboard/admin", response_model=AdminDashboardModel)
+async def dashboard_admin(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can access this dashboard")
+
+    company_id = current_user.franchise_id
+    members_cursor = database.users.find({"franchise_id": company_id}, {"_id": 0}) if company_id else []
+    members_docs = await members_cursor.to_list(200) if company_id else []
+    members = [UserPublic(**doc) for doc in members_docs]
+
+    return AdminDashboardModel(company_id=company_id, team_members=members)
+
+
+@api_router.get("/dashboard/super-admin", response_model=SuperAdminDashboard)
+async def dashboard_super_admin(
+    current_user: UserInDB = Depends(get_current_active_user),
+    database: AsyncIOMotorDatabase = Depends(get_db),
+):
+    if current_user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Only Super Admin can access this dashboard")
+
+    pending_cursor = database.users.find({"is_verified": False}, {"_id": 0})
+    pending_docs = await pending_cursor.to_list(200)
+    pending_users = [UserPublic(**doc) for doc in pending_docs]
+
+    total_users = await database.users.count_documents({})
+    return SuperAdminDashboard(total_users=total_users, pending_users=pending_users)
+
+        await database.users.insert_one(admin_user.model_dump())
+
+
+@app.on_event("startup")
+async def on_startup() -> None:
+    await seed_default_users(db)
+
         franchise_id=None,
         password_hash=password_hash,
         is_verified=False,

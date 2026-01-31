@@ -178,6 +178,20 @@ class DashboardFranchise(BaseModel):
     recent_leads: list[LeadPublic]
 
 
+class SuperAdminDashboard(BaseModel):
+    total_users: int
+    pending_users: list[UserPublic]
+
+
+class AdminDashboardModel(BaseModel):
+    company_id: Optional[str] = None
+    team_members: list[UserPublic]
+
+
+class UserDashboardModel(BaseModel):
+    user: UserPublic
+
+
 class RazorpayOrderRequest(BaseModel):
     property_id: str
     amount: float

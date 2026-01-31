@@ -82,4 +82,5 @@ def user_to_public(user: UserInDB) -> UserPublic:
         full_name=user.full_name,
         role=user.role,
         franchise_id=user.franchise_id,
+        is_verified=user.is_verified,
     )
