@@ -20,12 +20,12 @@ export function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await register({ full_name: fullName, email, password, role: "customer" });
+      const user = await register({ full_name: fullName, email, password });
       toast({
         title: "Account created",
-        description: `Welcome ${user.full_name}`,
+        description: `Welcome ${user.full_name}. Your account is pending Super Admin approval.`,
       });
-      navigate("/dashboard/customer");
+      navigate("/dashboard/user");
     } catch (error) {
       toast({
         title: "Registration failed",
