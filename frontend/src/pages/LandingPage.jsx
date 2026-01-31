@@ -54,15 +54,18 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50">
-      <header className="border-b border-slate-800 bg-slate-950/60 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="h-9 w-9 rounded-lg bg-emerald-600" />
+    <div className="min-h-screen bg-gradient-to-b from-black via-slate-950 to-black text-slate-50">
+      <header className="border-b border-yellow-500/10 bg-black/70 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-yellow-500/40 bg-black text-xl font-bold text-yellow-400">
+              GP
+            </div>
             <div>
-              <div className="text-lg font-semibold tracking-tight" data-testid="brand-name">
+              <div className="text-lg font-semibold tracking-tight text-white" data-testid="brand-name">
                 Golasco Property
               </div>
+              <p className="text-xs uppercase tracking-[0.18em] text-yellow-400/80">Urban luxury real estate</p>
             </div>
           </div>
           {user && (
@@ -70,7 +73,7 @@ export function LandingPage() {
               type="button"
               onClick={goToDashboard}
               data-testid="home-go-dashboard-button"
-              className="rounded-full border border-emerald-500/50 bg-slate-900/70 px-4 text-xs font-medium text-emerald-300 hover:bg-slate-900"
+              className="rounded-full border border-yellow-500/60 bg-black px-4 text-xs font-medium text-yellow-100 hover:bg-yellow-500/10"
               variant="outline"
             >
               Go to dashboard
@@ -80,13 +83,21 @@ export function LandingPage() {
       </header>
 
       <main className="relative flex min-h-[calc(100vh-57px)] items-center justify-center overflow-hidden px-4 py-10">
-        {/* softly animated background blobs */}
-        <div className="pointer-events-none absolute -left-24 -top-32 h-56 w-56 rounded-full bg-emerald-600/20 blur-3xl motion-safe:animate-pulse" />
-        <div className="pointer-events-none absolute -right-32 -bottom-40 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl motion-safe:animate-pulse" />
-        <div className="pointer-events-none absolute inset-x-12 top-24 h-32 rounded-3xl bg-gradient-to-r from-emerald-500/5 via-sky-500/5 to-emerald-500/5 blur-2xl" />
+        {/* animated real-estate skyline background */}
+        <div className="pointer-events-none absolute inset-0 opacity-20">
+          <div className="absolute inset-x-0 bottom-12 mx-auto flex max-w-6xl items-end justify-between gap-4">
+            <div className="h-24 w-10 rounded-t-md bg-gradient-to-t from-yellow-500/60 via-yellow-400/30 to-transparent animate-[pulse_4s_ease-in-out_infinite]" />
+            <div className="h-32 w-12 rounded-t-md bg-gradient-to-t from-yellow-400/70 via-yellow-300/40 to-transparent animate-[pulse_4s_ease-in-out_infinite_0.8s]" />
+            <div className="h-20 w-8 rounded-t-md bg-gradient-to-t from-yellow-500/50 via-yellow-300/30 to-transparent animate-[pulse_4s_ease-in-out_infinite_0.4s]" />
+            <div className="h-28 w-14 rounded-t-md bg-gradient-to-t from-yellow-400/80 via-yellow-200/40 to-transparent animate-[pulse_4s_ease-in-out_infinite_1.2s]" />
+            <div className="h-22 w-9 rounded-t-md bg-gradient-to-t from-yellow-500/60 via-yellow-200/30 to-transparent animate-[pulse_4s_ease-in-out_infinite_0.2s]" />
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        </div>
 
+        {/* white real-estate card foreground */}
         <section className="relative w-full max-w-md">
-          <Card className="border-slate-800/80 bg-slate-950/80 shadow-[0_18px_45px_rgba(0,0,0,0.7)] backdrop-blur" data-testid="home-login-card">
+          <Card className="border-yellow-500/20 bg-white text-slate-900 shadow-[0_22px_60px_rgba(0,0,0,0.9)]" data-testid="home-login-card">
             <CardContent className="space-y-7 p-6">
               <div className="space-y-2 text-center">
                 <h1
