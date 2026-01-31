@@ -78,6 +78,15 @@ async def register_user(payload: UserRegister, database: AsyncIOMotorDatabase = 
         email=payload.email,
         full_name=payload.full_name,
         role="user",
+        franchise_id=None,
+        password_hash=password_hash,
+        is_verified=False,
+    )
+    await database.users.insert_one(user_in_db.model_dump())
+
+    # User can log in only after super admin approval, but we still return a token for basic access
+    access_token = create_access_token({"sub": user_in_db.id, "role": user_in_db.role})
+    return Token(access_token=access_token, user=user_to_public(user_in_db))
 
 
 async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
