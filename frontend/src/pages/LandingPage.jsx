@@ -79,10 +79,15 @@ export function LandingPage() {
         </div>
       </header>
 
-      <main className="flex min-h-[calc(100vh-57px)] items-center justify-center px-4 py-10">
-        <section className="w-full max-w-md">
-          <Card className="border-slate-800 bg-slate-900/80" data-testid="home-login-card">
-            <CardContent className="space-y-6 p-6">
+      <main className="relative flex min-h-[calc(100vh-57px)] items-center justify-center overflow-hidden px-4 py-10">
+        {/* softly animated background blobs */}
+        <div className="pointer-events-none absolute -left-24 -top-32 h-56 w-56 rounded-full bg-emerald-600/20 blur-3xl motion-safe:animate-pulse" />
+        <div className="pointer-events-none absolute -right-32 -bottom-40 h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl motion-safe:animate-pulse" />
+        <div className="pointer-events-none absolute inset-x-12 top-24 h-32 rounded-3xl bg-gradient-to-r from-emerald-500/5 via-sky-500/5 to-emerald-500/5 blur-2xl" />
+
+        <section className="relative w-full max-w-md">
+          <Card className="border-slate-800/80 bg-slate-950/80 shadow-[0_18px_45px_rgba(0,0,0,0.7)] backdrop-blur" data-testid="home-login-card">
+            <CardContent className="space-y-7 p-6">
               <div className="space-y-2 text-center">
                 <h1
                   className="text-4xl font-semibold tracking-tight text-white sm:text-5xl"
@@ -91,23 +96,25 @@ export function LandingPage() {
                   Login to Golasco
                 </h1>
                 <p className="text-sm text-slate-300" data-testid="hero-subtitle">
-                  Single login for Super Admin, Admin, and User. Access changes automatically based on your role.
+                  One secure gateway for <span className="font-semibold text-emerald-300">Super Admin</span>, {" "}
+                  <span className="font-semibold text-cyan-300">Admin</span> and {" "}
+                  <span className="font-semibold text-slate-100">Users</span>.
                 </p>
               </div>
 
-              <div className="space-y-2" data-testid="home-role-select-wrapper">
+              <div className="space-y-3" data-testid="home-role-select-wrapper">
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Select access type</p>
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger
                     data-testid="home-role-select"
-                    className="h-10 border-slate-800 bg-slate-950/80 text-sm focus-visible:ring-emerald-500"
+                    className="h-10 border-slate-800 bg-slate-950/80 text-sm transition-colors duration-200 focus-visible:ring-emerald-500"
                   >
                     <SelectValue
                       placeholder="Choose role"
                       data-testid="home-role-select-value"
                     />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border-slate-800 bg-slate-950 text-slate-50">
                     <SelectItem value="super_admin" data-testid="home-role-option-super-admin">
                       Super Admin – Full system control
                     </SelectItem>
@@ -119,6 +126,14 @@ export function LandingPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p
+                  className="text-xs text-slate-400"
+                  data-testid="home-role-description"
+                >
+                  {selectedRole === "super_admin" && "Full visibility across all companies, branches and users."}
+                  {selectedRole === "admin" && "Focused view of your own company or branch team."}
+                  {selectedRole === "user" && "Personal dashboard for your own activity and profile."}
+                </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4" data-testid="home-login-form">
