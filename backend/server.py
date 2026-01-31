@@ -128,6 +128,27 @@ async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
 
 @api_router.get("/super-admin/users/pending", response_model=SuperAdminDashboard)
 async def list_pending_users(
+
+# ---------- Dev utility: seed default users ----------
+
+@api_router.get("/dev/seed-default-users")
+async def dev_seed_default_users(database: AsyncIOMotorDatabase = Depends(get_db)):
+    """One-time helper to create default Super Admin and Admin users.
+
+    This is meant for initial setup only. Call once, then you can login with:
+    - super@golasco.com / Super@123
+    - admin@golasco.com / Admin@123
+    """
+    await seed_default_users(database)
+
+    super_doc = await database.users.find_one({"role": "super_admin"}, {"_id": 0})
+    admin_doc = await database.users.find_one({"role": "admin"}, {"_id": 0})
+
+    return {
+        "super_admin": UserPublic(**super_doc) if super_doc else None,
+        "admin": UserPublic(**admin_doc) if admin_doc else None,
+    }
+
     current_user: UserInDB = Depends(get_current_active_user),
     database: AsyncIOMotorDatabase = Depends(get_db),
 ):
