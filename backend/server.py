@@ -118,6 +118,7 @@ async def seed_default_users(database: AsyncIOMotorDatabase) -> None:
             password_hash=_hash("Admin@123"),
             is_verified=True,
         )
+        await database.users.insert_one(admin_user.model_dump())
 
 
 # ---------- Super Admin User Management ----------
