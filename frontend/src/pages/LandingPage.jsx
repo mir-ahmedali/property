@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 export function LandingPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState("user");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
