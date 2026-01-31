@@ -33,30 +33,29 @@ function AppInner() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
-            path="/dashboard/customer"
+            path="/dashboard/super-admin"
             element={
-              <ProtectedRoute allowedRoles={["customer"]}>
-                <CustomerDashboard />
+              <ProtectedRoute allowedRoles={["super_admin"]}>
+                <SuperAdminDashboard />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/dashboard/agent"
+            path="/dashboard/admin"
             element={
-              <ProtectedRoute allowedRoles={["agent"]}>
-                <AgentDashboard />
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/dashboard/franchise"
+            path="/dashboard/user"
             element={
-              <ProtectedRoute allowedRoles={["franchise_owner"]}>
-                <FranchiseDashboard />
+              <ProtectedRoute allowedRoles={["user"]}>
+                <UserDashboard />
               </ProtectedRoute>
             }
           />
-          <Route path="/properties/:id" element={<PropertyDetailPage />} />
         </Routes>
       </Router>
       <Toaster />
