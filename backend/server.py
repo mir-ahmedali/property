@@ -63,15 +63,24 @@ async def root():
 # ---------- Auth Routes ----------
 
 @api_router.post("/auth/register", response_model=Token)
-async def register_user(payload: UserCreate, database: AsyncIOMotorDatabase = Depends(get_db)):
+async def register_user(payload: UserRegister, database: AsyncIOMotorDatabase = Depends(get_db)):
+    """Public registration: always creates a normal user awaiting approval."""
     existing = await database.users.find_one({"email": payload.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
     password_hash = get_password_hash(payload.password)
-    user_in_db = UserInDB(**payload.model_dump(exclude={"password"}), password_hash=password_hash)
+    user_in_db = UserInDB(
+        email=payload.email,
+        full_name=payload.full_name,
+        role="user",
+        franchise_id=None,
+        password_hash=password_hash,
+        is_verified=False,
+    )
     await database.users.insert_one(user_in_db.model_dump())
 
+    # User can log in only after super admin approval, but we still return a token for basic access
     access_token = create_access_token({"sub": user_in_db.id, "role": user_in_db.role})
     return Token(access_token=access_token, user=user_to_public(user_in_db))
 
@@ -85,6 +94,10 @@ async def login_user(payload: UserLogin, database: AsyncIOMotorDatabase = Depend
     user = UserInDB(**doc)
     if not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+
+    # Only super admin can bypass verification
+    if user.role != "super_admin" and not user.is_verified:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your account is pending approval by Super Admin")
 
     access_token = create_access_token({"sub": user.id, "role": user.role})
     return Token(access_token=access_token, user=user_to_public(user))

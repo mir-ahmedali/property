@@ -14,12 +14,23 @@ def utc_now() -> datetime:
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
-    role: Literal["customer", "agent", "franchise_owner", "super_admin"]
-    franchise_id: Optional[str] = None
+    role: Literal["super_admin", "admin", "user"]
+    franchise_id: Optional[str] = None  # used as company/branch id for admin & user
 
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
+
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: str = Field(min_length=6)
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 
 class UserLogin(BaseModel):
@@ -32,6 +43,7 @@ class UserInDB(UserBase):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     password_hash: str
+    is_verified: bool = False
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 
@@ -42,6 +54,7 @@ class UserPublic(BaseModel):
     full_name: str
     role: str
     franchise_id: Optional[str] = None
+    is_verified: bool = False
 
 
 class Token(BaseModel):
