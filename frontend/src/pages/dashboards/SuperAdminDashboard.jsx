@@ -77,9 +77,8 @@ export function SuperAdminDashboard() {
             Logout
           </Button>
         </div>
-          <div className="text-xs text-slate-400" data-testid="super-admin-total-users">
-            Total users in system: <span className="font-semibold text-slate-100">{data.total_users}</span>
-          </div>
+        <div className="text-xs text-slate-400" data-testid="super-admin-total-users">
+          Total users in system: <span className="font-semibold text-slate-100">{data.total_users}</span>
         </div>
 
         <Card className="border-slate-800 bg-slate-900/80" data-testid="super-admin-pending-users-card">
