@@ -114,18 +114,18 @@ export function LandingPage() {
               </div>
 
               <div className="space-y-3" data-testid="home-role-select-wrapper">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Select access type</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Select access type</p>
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger
                     data-testid="home-role-select"
-                    className="h-10 border-slate-800 bg-slate-950/80 text-sm transition-colors duration-200 focus-visible:ring-emerald-500"
+                    className="h-10 border-yellow-500/40 bg-white text-sm transition-colors duration-200 focus-visible:ring-yellow-500"
                   >
                     <SelectValue
                       placeholder="Choose role"
                       data-testid="home-role-select-value"
                     />
                   </SelectTrigger>
-                  <SelectContent className="border-slate-800 bg-slate-950 text-slate-50">
+                  <SelectContent className="border-yellow-500/40 bg-white text-slate-900">
                     <SelectItem value="super_admin" data-testid="home-role-option-super-admin">
                       Super Admin – Full system control
                     </SelectItem>
@@ -138,7 +138,7 @@ export function LandingPage() {
                   </SelectContent>
                 </Select>
                 <p
-                  className="text-xs text-slate-400"
+                  className="text-xs text-slate-500"
                   data-testid="home-role-description"
                 >
                   {selectedRole === "super_admin" && "Full visibility across all companies, branches and users."}
