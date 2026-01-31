@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from db import db, get_db, close_db_client
 from models import (
     UserCreate,
+    UserRegister,
     UserLogin,
     UserInDB,
     UserPublic,
