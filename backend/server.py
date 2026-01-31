@@ -182,19 +182,6 @@ async def dev_seed_default_users(database: AsyncIOMotorDatabase = Depends(get_db
         "admin": UserPublic(**admin_doc) if admin_doc else None,
     }
 
-    current_user: UserInDB = Depends(get_current_active_user),
-    database: AsyncIOMotorDatabase = Depends(get_db),
-):
-    if current_user.role != "super_admin":
-        raise HTTPException(status_code=403, detail="Only Super Admin can view pending users")
-
-    pending_cursor = database.users.find({"is_verified": False}, {"_id": 0})
-    pending_docs = await pending_cursor.to_list(200)
-    pending_users = [UserPublic(**doc) for doc in pending_docs]
-
-    total_users = await database.users.count_documents({})
-    return SuperAdminDashboard(total_users=total_users, pending_users=pending_users)
-
 
 @api_router.post("/super-admin/users/{user_id}/verify", response_model=UserPublic)
 async def verify_user_request(
