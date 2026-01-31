@@ -3,11 +3,13 @@ import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 export function SuperAdminDashboard() {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +26,11 @@ export function SuperAdminDashboard() {
     };
     if (token) fetchData();
   }, [token]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const handleVerify = async (userId) => {
     try {
@@ -61,6 +68,15 @@ export function SuperAdminDashboard() {
       <div className="mx-auto max-w-6xl space-y-6" data-testid="super-admin-dashboard">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold">Super Admin control panel</h1>
+          <Button
+            type="button"
+            onClick={handleLogout}
+            data-testid="super-admin-dashboard-logout-button"
+            className="rounded-full bg-slate-800 px-4 text-xs font-medium text-slate-100 hover:bg-slate-700"
+          >
+            Logout
+          </Button>
+        </div>
           <div className="text-xs text-slate-400" data-testid="super-admin-total-users">
             Total users in system: <span className="font-semibold text-slate-100">{data.total_users}</span>
           </div>

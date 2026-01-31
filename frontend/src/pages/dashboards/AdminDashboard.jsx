@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 export function AdminDashboard() {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -18,6 +21,11 @@ export function AdminDashboard() {
     };
     if (token) fetchData();
   }, [token]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   if (!data) {
     return (
@@ -33,7 +41,17 @@ export function AdminDashboard() {
   return (
     <div className="min-h-[calc(100vh-56px)] bg-slate-950 px-4 py-8 text-slate-50">
       <div className="mx-auto max-w-5xl space-y-6" data-testid="admin-dashboard">
-        <h1 className="text-2xl font-semibold">Admin dashboard</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Admin dashboard</h1>
+          <Button
+            type="button"
+            onClick={handleLogout}
+            data-testid="admin-dashboard-logout-button"
+            className="rounded-full bg-slate-800 px-4 text-xs font-medium text-slate-100 hover:bg-slate-700"
+          >
+            Logout
+          </Button>
+        </div>
         <Card className="border-slate-800 bg-slate-900/80" data-testid="admin-company-card">
           <CardHeader>
             <CardTitle className="text-sm text-slate-300">Company / Branch</CardTitle>

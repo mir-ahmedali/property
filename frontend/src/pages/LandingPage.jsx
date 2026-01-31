@@ -1,57 +1,81 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
-
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+import { useToast } from "@/hooks/use-toast";
 
 export function LandingPage() {
-  const [properties, setProperties] = useState([]);
-  const [city, setCity] = useState("");
-  const [type, setType] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState("user");
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProps = async () => {
-      const res = await axios.get(`${backendUrl}/api/properties`, {
-        params: {
-          city: city || undefined,
-          type: type || undefined,
-          max_price: maxPrice || undefined,
-        },
+  const navigate = useNavigate();
+  const { user, login } = useAuth();
+  const { toast } = useToast();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const loggedInUser = await login(email, password);
+      toast({
+        title: "Welcome back",
+        description: `Logged in as ${loggedInUser.full_name}`,
       });
-      setProperties(res.data);
-    };
-    fetchProps();
-  }, [city, type, maxPrice]);
+      if (loggedInUser.role === "super_admin") navigate("/dashboard/super-admin");
+      else if (loggedInUser.role === "admin") navigate("/dashboard/admin");
+      else navigate("/dashboard/user");
+    } catch (error) {
+      let description = "Invalid credentials";
+      if (error.response?.data?.detail) {
+        description = typeof error.response.data.detail === "string"
+          ? error.response.data.detail
+          : JSON.stringify(error.response.data.detail);
+      }
+      toast({
+        title: "Login failed",
+        description,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const goToDashboard = () => {
     if (!user) return;
-    if (user.role === "customer") navigate("/dashboard/customer");
-    else if (user.role === "agent") navigate("/dashboard/agent");
-    else if (user.role === "franchise_owner") navigate("/dashboard/franchise");
+    if (user.role === "super_admin") navigate("/dashboard/super-admin");
+    else if (user.role === "admin") navigate("/dashboard/admin");
+    else navigate("/dashboard/user");
   };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <header className="border-b border-slate-800 bg-slate-950/60 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <Link to="/" data-testid="home-logo-link" className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <div className="h-9 w-9 rounded-lg bg-emerald-600" />
             <div>
               <div className="text-lg font-semibold tracking-tight" data-testid="brand-name">
                 Golasco Property
               </div>
-              <p className="text-xs text-slate-400">Secure access for Super Admin, Admin & User</p>
             </div>
-          </Link>
+          </div>
+          {user && (
+            <Button
+              type="button"
+              onClick={goToDashboard}
+              data-testid="home-go-dashboard-button"
+              className="rounded-full border border-emerald-500/50 bg-slate-900/70 px-4 text-xs font-medium text-emerald-300 hover:bg-slate-900"
+              variant="outline"
+            >
+              Go to dashboard
+            </Button>
+          )}
         </div>
       </header>
 
@@ -71,7 +95,7 @@ export function LandingPage() {
                 </p>
               </div>
 
-              <div className="space-y-2" data-testid="home-role-hints">
+              <div className="space-y-2" data-testid="home-role-select-wrapper">
                 <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Select access type</p>
                 <Select value={selectedRole} onValueChange={setSelectedRole}>
                   <SelectTrigger
@@ -97,24 +121,59 @@ export function LandingPage() {
                 </Select>
               </div>
 
-              <div className="pt-2 text-center text-xs text-slate-500" data-testid="home-login-info">
-                Use your email & password to login. New users can register from the link below; Super Admin will approve
-                their access.
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4" data-testid="home-login-form">
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400" htmlFor="home-email">
+                    Email
+                  </label>
+                  <Input
+                    id="home-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-10 border-slate-700 bg-slate-950/60 text-sm text-slate-50 focus-visible:ring-emerald-500"
+                    data-testid="home-login-email-input"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400" htmlFor="home-password">
+                    Password
+                  </label>
+                  <Input
+                    id="home-password"
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="h-10 border-slate-700 bg-slate-950/60 text-sm text-slate-50 focus-visible:ring-emerald-500"
+                    data-testid="home-login-password-input"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  data-testid="home-login-submit-button"
+                  className="mt-2 w-full rounded-full bg-emerald-600 text-sm font-medium text-white hover:bg-emerald-700"
+                >
+                  {loading ? "Logging in..." : "Login"}
+                </Button>
+              </form>
 
-              <div className="flex justify-center">
-                <Link to="/login" data-testid="home-login-link">
-                  <Button className="rounded-full bg-emerald-600 px-6 text-sm font-medium text-white hover:bg-emerald-700">
-                    Go to login
-                  </Button>
+              <p className="pt-1 text-center text-xs text-slate-400" data-testid="home-register-text">
+                New user?{" "}
+                <Link
+                  to="/register"
+                  className="font-medium text-emerald-300 hover:text-emerald-200"
+                  data-testid="home-go-register-link"
+                >
+                  Create an account
                 </Link>
-              </div>
+              </p>
             </CardContent>
           </Card>
         </section>
       </main>
-
-      {/* Legacy property sections removed for this simplified login-focused home */}
     </div>
   );
 }
