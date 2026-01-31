@@ -9,6 +9,7 @@ import { AdminDashboard } from "@/pages/dashboards/AdminDashboard";
 import { UserDashboard } from "@/pages/dashboards/UserDashboard";
 import { PropertyDetailPage } from "@/pages/PropertyDetailPage";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { TopBar } from "@/components/TopBar";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ function AppInner() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <Router>
+        <TopBar />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />

@@ -22,7 +22,7 @@ export function AdminDashboard() {
   if (!data) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100"
+        className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-slate-950 text-slate-100"
         data-testid="admin-dashboard-loading"
       >
         Loading admin dashboard...
@@ -31,7 +31,7 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50">
+    <div className="min-h-[calc(100vh-56px)] bg-slate-950 px-4 py-8 text-slate-50">
       <div className="mx-auto max-w-5xl space-y-6" data-testid="admin-dashboard">
         <h1 className="text-2xl font-semibold">Admin dashboard</h1>
         <Card className="border-slate-800 bg-slate-900/80" data-testid="admin-company-card">

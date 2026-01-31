@@ -133,14 +133,14 @@ export function PropertyDetailPage() {
 
   if (!property) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100" data-testid="property-loading">
+      <div className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-slate-950 text-slate-100" data-testid="property-loading">
         Loading property...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50">
+    <div className="min-h-[calc(100vh-56px)] bg-slate-950 px-4 py-8 text-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
         <Card className="border-slate-800 bg-slate-900/80" data-testid="property-detail-card">
           <CardHeader>

@@ -38,7 +38,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4">
+    <div className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-slate-950 px-4">
       <Card className="w-full max-w-md border-slate-800 bg-slate-900/80">
         <CardHeader>
           <CardTitle className="text-xl font-semibold text-white" data-testid="register-title">

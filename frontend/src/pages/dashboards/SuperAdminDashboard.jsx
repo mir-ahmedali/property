@@ -48,7 +48,7 @@ export function SuperAdminDashboard() {
   if (loading || !data) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center bg-slate-950 text-slate-100"
+        className="flex min-h-[calc(100vh-56px)] items-center justify-center bg-slate-950 text-slate-100"
         data-testid="super-admin-dashboard-loading"
       >
         Loading super admin dashboard...
@@ -57,7 +57,7 @@ export function SuperAdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-8 text-slate-50">
+    <div className="min-h-[calc(100vh-56px)] bg-slate-950 px-4 py-8 text-slate-50">
       <div className="mx-auto max-w-6xl space-y-6" data-testid="super-admin-dashboard">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-2xl font-semibold">Super Admin control panel</h1>
