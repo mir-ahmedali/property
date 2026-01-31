@@ -105,43 +105,9 @@ export function LandingPage() {
                   Access your skyline
                 </h1>
                 <p className="text-sm text-slate-600" data-testid="hero-subtitle">
-                  A single, secure gate for <span className="font-semibold text-yellow-600">Super Admin</span>, {" "}
+                  One transparent gate for <span className="font-semibold text-yellow-600">Super Admin</span>, {" "}
                   <span className="font-semibold text-slate-900">Admin</span> and {" "}
                   <span className="font-semibold text-slate-900">Users</span> to manage premium properties.
-                </p>
-              </div>
-
-              <div className="space-y-3" data-testid="home-role-select-wrapper">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Select access type</p>
-                <Select value={selectedRole} onValueChange={setSelectedRole}>
-                  <SelectTrigger
-                    data-testid="home-role-select"
-                    className="h-10 border-yellow-500/40 bg-white text-sm transition-colors duration-200 focus-visible:ring-yellow-500"
-                  >
-                    <SelectValue
-                      placeholder="Choose role"
-                      data-testid="home-role-select-value"
-                    />
-                  </SelectTrigger>
-                  <SelectContent className="border-yellow-500/40 bg-white text-slate-900">
-                    <SelectItem value="super_admin" data-testid="home-role-option-super-admin">
-                      Super Admin – Full system control
-                    </SelectItem>
-                    <SelectItem value="admin" data-testid="home-role-option-admin">
-                      Admin – Own company / branch
-                    </SelectItem>
-                    <SelectItem value="user" data-testid="home-role-option-user">
-                      User – Personal dashboard only
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p
-                  className="text-xs text-slate-500"
-                  data-testid="home-role-description"
-                >
-                  {selectedRole === "super_admin" && "Full visibility across all companies, branches and users."}
-                  {selectedRole === "admin" && "Focused view of your own company or branch team."}
-                  {selectedRole === "user" && "Personal dashboard for your own activity and profile."}
                 </p>
               </div>
 
