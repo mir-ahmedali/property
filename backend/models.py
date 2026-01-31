@@ -33,11 +33,6 @@ class UserLogin(BaseModel):
     password: str
 
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
 class UserInDB(UserBase):
     model_config = ConfigDict(extra="ignore")
 
