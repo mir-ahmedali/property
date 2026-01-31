@@ -101,15 +101,15 @@ export function LandingPage() {
             <CardContent className="space-y-7 p-6">
               <div className="space-y-2 text-center">
                 <h1
-                  className="text-4xl font-semibold tracking-tight text-white sm:text-5xl"
+                  className="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl"
                   data-testid="hero-heading"
                 >
-                  Login to Golasco
+                  Access your skyline
                 </h1>
-                <p className="text-sm text-slate-300" data-testid="hero-subtitle">
-                  One secure gateway for <span className="font-semibold text-emerald-300">Super Admin</span>, {" "}
-                  <span className="font-semibold text-cyan-300">Admin</span> and {" "}
-                  <span className="font-semibold text-slate-100">Users</span>.
+                <p className="text-sm text-slate-600" data-testid="hero-subtitle">
+                  A single, secure gate for <span className="font-semibold text-yellow-600">Super Admin</span>, {" "}
+                  <span className="font-semibold text-slate-900">Admin</span> and {" "}
+                  <span className="font-semibold text-slate-900">Users</span> to manage premium properties.
                 </p>
               </div>
 
